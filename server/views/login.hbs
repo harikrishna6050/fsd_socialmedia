@@ -22,11 +22,11 @@
         <!-- <link rel="stylesheet" href="./assets/css/portfolio.css">
     <link rel="stylesheet" href="./assets/css/contact.css"> -->
 
-        <title>SocialMedia: Login</title>
+    <title>SocialMedia: Login</title>
     </head>
+
     <body>
-        <div
-            style="width: 100%;display: flex; justify-content: center; position: absolute; top: 30%;">
+        <div style="width: 100%;display: flex; justify-content: center; position: absolute; top: 30%;">
             <div style="padding: 15px; border: 1px solid black;">
                 <h3 style="text-align: center;">Login</h3>
                 <form action="/login" method="post">
@@ -35,6 +35,7 @@
                         <input type="text" name="userName" class="form-control"
                             id="userName">
                     </div>
+
                     <div class="mb-3">
                         <label for="userPwd"
                             class="form-label">Password</label>
@@ -46,10 +47,17 @@
                         <button type="submit"
                             class="btn btn-primary">Submit</button>
                     </div>
-
                 </form>
+                &nbsp;
+                
+                <div style="text-align: center;">
+                    <form action="/user-signup" method="post">
+                        <button type="submit" class="btn btn-info">
+                            Sign Up<i class="bi bi-person"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
-
         </div>
 
         <script

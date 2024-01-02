@@ -109,8 +109,6 @@ async function getAllUsersPosts() {
     return output;
 }
 
-
-
 /**
  * @description "Get User Wise Posts"
  * @param {*} _userId 
@@ -131,8 +129,8 @@ async function getUserWisePosts(_userId) {
  * @returns "User Post added response from DB"
  */
 async function addUserPosts(_userId, _content) {
-    const _ADD_USER_POST_QUERY = `INSERT INTO posts(user_idUsers, content) VALUES (?, ?)`;
-    const _ADD_USER_POST_DATA = [_userId, _content];
+    const _ADD_USER_POST_QUERY = `INSERT INTO posts(user_idUsers, content, likes, shares) VALUES (?, ?, ?, ?)`;
+    const _ADD_USER_POST_DATA = [_userId, _content, 0, 0];
 
     const[output] = await _MYSQL_CONNECTION.query(_ADD_USER_POST_QUERY, _ADD_USER_POST_DATA);
     return output;
@@ -144,7 +142,12 @@ async function addUserPosts(_userId, _content) {
  * @param {*} _likeCount 
  * @returns "DB response"
  */
-async function updateUserPostLikes(_postId, _likeCount) {
+async function updateUserPostLikes(_postId) {
+    const [_SEL_POST_DATA] = await _MYSQL_CONNECTION.query(`SELECT *from posts WHERE idPosts = ${_postId}`);
+    // console.log(_SEL_POST_DATA);
+    let _selUserPostLikesCount = _SEL_POST_DATA[0].likes;
+    let _likeCount = _selUserPostLikesCount + 1;
+
     const _UPDATE_USER_POST_LIKES_QUERY = `UPDATE posts SET likes = ? WHERE idPosts = ?`;
     const _UPDATE_USER_POST_LIKES_DATA = [_likeCount, _postId];
 
@@ -158,7 +161,11 @@ async function updateUserPostLikes(_postId, _likeCount) {
  * @param {*} _shareCount 
  * @returns "DB response"
  */
-async function updateUserPostShares(_postId, _shareCount) {
+async function updateUserPostShares(_postId) {
+    const [_SEL_POST_DATA] = await _MYSQL_CONNECTION.query(`SELECT *from posts WHERE idPosts = ${_postId}`);
+    let _selUserPostSharesCount = _SEL_POST_DATA[0].shares;
+    let _shareCount = _selUserPostSharesCount + 1;
+
     const _UPDATE_USER_POST_SHARES_QUERY = `UPDATE posts SET shares = ? WHERE idPosts = ?`;
     const _UPDATE_USER_POST_SHARES_DATA = [_shareCount, _postId];
 
@@ -166,4 +173,17 @@ async function updateUserPostShares(_postId, _shareCount) {
     return output;
 }
 
-module.exports = {getUsers, getParticularUser, addUser, updateUser, deleteUser, updateUserPwd, getAllUsersPosts, getUserWisePosts, addUserPosts, updateUserPostLikes, updateUserPostShares};
+/**
+ * @description "Delete particular user post"
+ * @param {*} _postId 
+ * @returns "Deleted user POST from Database"
+ */
+async function deleteUserPost(_postId){
+    const _DELETE_USER_POST_QUERY = `DELETE from posts WHERE idPosts = ?`;
+    const _DELETE_USER_POST_ID = [_postId];
+
+    const[output] = await _MYSQL_CONNECTION.query(_DELETE_USER_POST_QUERY, _DELETE_USER_POST_ID);
+    return output;
+}
+
+module.exports = {getUsers, getParticularUser, addUser, updateUser, deleteUser, updateUserPwd, getAllUsersPosts, getUserWisePosts, addUserPosts, updateUserPostLikes, updateUserPostShares, deleteUserPost};

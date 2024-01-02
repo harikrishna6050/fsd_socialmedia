@@ -23,7 +23,7 @@ _USER_EXPRESS_API.use(_COOKIE_PARSER());
 /**
  * @description "Import Database related function form source"
  */
-const { getUsers, getParticularUser, addUser, updateUser, deleteUser, updateUserPwd, getAllUsersPosts, getUserWisePosts, addUserPosts, updateUserPostLikes, updateUserPostShares } = require('./userAndPostsDatabase');
+const { getUsers, getParticularUser, addUser, updateUser, deleteUser, updateUserPwd, getAllUsersPosts, getUserWisePosts, addUserPosts, updateUserPostLikes, updateUserPostShares, deleteUserPost } = require('./userAndPostsDatabase');
 
 _USER_EXPRESS_API.get("/", (req,res) => {
     res.render("login");
@@ -44,13 +44,14 @@ _USER_EXPRESS_API.post('/login', async(req, res) => {
             if(_USER_PWD === _GET_ALL_USERS[i].password) {
                 // res.send("ok");
 
-                const _PAYLOAD = { "name": _GET_ALL_USERS[i].name, "profile": _GET_ALL_USERS[i].profile, "headline": _GET_ALL_USERS[i].headline};
+                const _PAYLOAD = {"idUsers": _GET_ALL_USERS[i].idUsers, "name": _GET_ALL_USERS[i].name, "profile": _GET_ALL_USERS[i].profile, "headline": _GET_ALL_USERS[i].headline};
 
                 const _SECRET_KEY = "abcdefghijklmnopqrstuvwxyz0123456789";
 
                 const _TOKEN = _JWT.sign(_PAYLOAD, _SECRET_KEY);
 
                 res.cookie("token", _TOKEN);
+                res.cookie("loggedUserId", _GET_ALL_USERS[i].idUsers);
                 res.redirect(`/posts/${_GET_ALL_USERS[i].idUsers}`);
 
             }
@@ -68,7 +69,7 @@ _USER_EXPRESS_API.post('/login', async(req, res) => {
 _USER_EXPRESS_API.get("/posts/:_userId", verifyLogin, async (req, res) => {
     const _USER_ID = req.params._userId;
     const output = await getUserWisePosts(_USER_ID);
-    console.log(req.payload);
+    // console.log(req.payload, output);
 
     res.render("posts", {
         data: output,
@@ -110,7 +111,9 @@ _USER_EXPRESS_API.post('/newUser', async(req, res) => {
     const { name, profile, headline, password } = req.body;
     // console.log(req.body);
     const _NEW_USER_DB_RES = await addUser(name, profile, headline, password);
-    res.send(_NEW_USER_DB_RES);
+    res.redirect("/");
+    // res.render("login");
+    // res.send(_NEW_USER_DB_RES);
 });
 
 /**
@@ -167,27 +170,60 @@ _USER_EXPRESS_API.get('/userWisePosts/:_userId', async(req, res) => {
  * @description "Add User New Post"
  */
 _USER_EXPRESS_API.post('/addUserPost', async(req, res) => {
-    const { user_idUsers, content } = req.body;
-    const _ADD_USER_POST_DB_RES = await addUserPosts(user_idUsers, content);
-    res.send(_ADD_USER_POST_DB_RES);
+    const { idUsers, content } = req.body;
+    // console.log(req.body);
+    const _ADD_USER_POST_DB_RES = await addUserPosts(idUsers, content);
+    // res.send(_ADD_USER_POST_DB_RES);
+
+    res.redirect(`/posts/${idUsers}`);
 });
 
 /**
  * @description "Update User Posts Likes Count"
  */
-_USER_EXPRESS_API.put('/updateUserPostLikes', async(req, res) => {
-    const { idPosts, likes } = req.body;
-    const _UPDATE_USER_POST_LIKES_DB_RES = await updateUserPostLikes(idPosts, likes);
-    res.send(_UPDATE_USER_POST_LIKES_DB_RES);
+_USER_EXPRESS_API.post('/updateUserPostLikes', async(req, res) => {
+    const { idPosts } = req.body;
+    // console.log(req.body);
+    const _UPDATE_USER_POST_LIKES_DB_RES = await updateUserPostLikes(idPosts);
+    // res.send(_UPDATE_USER_POST_LIKES_DB_RES);
+    let _userId = req.cookies.loggedUserId;
+    res.redirect(`/posts/${_userId}`);
 });
 
 /**
  * @description "Update User Posts Shares Count"
  */
-_USER_EXPRESS_API.put('/updateUserPostShares', async(req, res) => {
-    const { idPosts, shares } = req.body;
-    const _UPDATE_USER_POST_SHARES_DB_RES = await updateUserPostShares(idPosts, shares);
-    res.send(_UPDATE_USER_POST_SHARES_DB_RES);
+_USER_EXPRESS_API.post('/updateUserPostShares', async(req, res) => {
+    const { idPosts} = req.body;
+    const _UPDATE_USER_POST_SHARES_DB_RES = await updateUserPostShares(idPosts);
+    // res.send(_UPDATE_USER_POST_SHARES_DB_RES);
+    let _userId = req.cookies.loggedUserId;
+    res.redirect(`/posts/${_userId}`);
+});
+
+/**
+ * @description "Delete User Post"
+ */
+_USER_EXPRESS_API.post('/deleteUserPost', async(req, res) => {
+    const { idPosts} = req.body;
+    const _DELETE_USER_POST_DB_RES = await deleteUserPost(idPosts);
+    // res.send(_UPDATE_USER_POST_SHARES_DB_RES);
+    let _userId = req.cookies.loggedUserId;
+    res.redirect(`/posts/${_userId}`);
+});
+
+/**
+ * @description "Logg-off user"
+ */
+_USER_EXPRESS_API.post('/loggoffuser', async(req, res) => {
+    res.redirect("/");
+});
+
+/**
+ * @description "User Sign UP"
+ */
+_USER_EXPRESS_API.post('/user-signup', async(req, res) => {
+    res.render("registration");
 });
 
 /**
